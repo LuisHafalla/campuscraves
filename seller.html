@@ -1,0 +1,335 @@
+<!-- File: seller.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Seller</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <img src="assets/img/logo.png" alt="Logo" style="width:44px;height:auto;">
+        <strong>CampusCraves</strong>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="icon-btn" type="button" title="Notifications"><span class="icon">🔔</span></button>
+        <button class="icon-btn" type="button" title="Profile"><span class="icon">👤</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div>
+          <div style="font-weight:900;">Class Mode</div>
+          <div class="muted">Your store is visible to Students, you are accepting orders.</div>
+        </div>
+        <div class="toggle on" id="storeToggle" role="switch" aria-checked="true">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-weight:900;">Status:</div>
+        <div class="pill" id="statusPill">~ OPEN (Visible)</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabOrders" type="button">Orders</button>
+      <button class="tab" id="tabProducts" type="button">My Products</button>
+      <button class="tab" id="tabEarnings" type="button">Earnings</button>
+    </div>
+
+    <div class="block" id="viewOrders">
+      <div class="list" id="orderList"></div>
+    </div>
+
+    <div class="block" id="viewProducts" style="display:none;">
+      <button class="big-btn" type="button" id="addProductBtn">+ Add New Product</button>
+      <div style="height:12px"></div>
+      <div class="list" id="productList"></div>
+    </div>
+
+    <div class="block" id="viewEarnings" style="display:none;">
+      <div class="list">
+        <div class="item">
+          <div class="meta">
+            <strong>Weekly Total Earnings</strong>
+            <span class="muted" id="weekly">₱0</span>
+          </div>
+          <span class="badge">WEEK</span>
+        </div>
+
+        <div class="item">
+          <div class="meta">
+            <strong>Sales Breakdown</strong>
+            <span class="muted" id="breakdown">0 orders</span>
+          </div>
+          <span class="badge">SALES</span>
+        </div>
+
+        <div class="item">
+          <div class="meta">
+            <strong>Daily Summary</strong>
+            <span class="muted" id="daily">₱0 today</span>
+          </div>
+          <span class="badge">TODAY</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:14px"></div>
+    <button class="big-btn" type="button" onclick="logout()">Logout</button>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const seller = requireRole(["seller"]);
+
+    const storeToggle = document.getElementById("storeToggle");
+    const statusPill = document.getElementById("statusPill");
+
+    function renderStoreStatus(){
+      const users = get("users", []);
+      const idx = users.findIndex(u => u.email === seller.email);
+      const fresh = idx !== -1 ? users[idx] : seller;
+      const open = !!fresh.storeOpen;
+
+      if(open){
+        storeToggle.classList.add("on");
+        statusPill.textContent = "~ OPEN (Visible)";
+      } else {
+        storeToggle.classList.remove("on");
+        statusPill.textContent = "~ CLOSED (Hidden)";
+      }
+      set("session", fresh);
+    }
+
+    storeToggle.addEventListener("click", () => {
+      const users = get("users", []);
+      const idx = users.findIndex(u => u.email === seller.email);
+      if(idx !== -1){
+        users[idx].storeOpen = !users[idx].storeOpen;
+        set("users", users);
+        logActivity(`Seller store status changed: ${users[idx].storeOpen ? "OPEN" : "CLOSED"}`);
+      }
+      renderStoreStatus();
+    });
+
+    function sellerOrders(){
+      const orders = get("orders", []);
+      return orders.filter(o => (o.items || []).some(i => i.sellerEmail === seller.email));
+    }
+
+    function renderOrders(){
+      const list = document.getElementById("orderList");
+      const orders = sellerOrders();
+      list.innerHTML = "";
+
+      if(orders.length === 0){
+        list.innerHTML = `<div class="muted">No orders yet.</div>`;
+        return;
+      }
+
+      orders.forEach(o => {
+        const total = (o.items || [])
+          .filter(i => i.sellerEmail === seller.email)
+          .reduce((s,i)=> s + (i.price*i.qty), 0);
+
+        const div = document.createElement("div");
+        div.className = "block";
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>Order #${o.orderNo}</strong>
+            <span class="badge">${o.status}</span>
+          </div>
+          <div class="muted" style="margin-top:6px;">Total: ₱${total}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+            <button class="btn small" type="button" data-act="accept" data-id="${o.orderNo}">Accept</button>
+            <button class="btn small danger" type="button" data-act="decline" data-id="${o.orderNo}">Decline</button>
+            <button class="btn small" type="button" data-act="ready" data-id="${o.orderNo}">Mark as ready</button>
+            <button class="btn small primary" type="button" data-act="complete" data-id="${o.orderNo}">Complete Order</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      document.querySelectorAll("button[data-act]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const act = btn.dataset.act;
+          const id = btn.dataset.id;
+
+          const orders = get("orders", []);
+          const idx = orders.findIndex(x => x.orderNo === id);
+          if(idx === -1) return;
+
+          if(act === "accept") orders[idx].status = "PREPARING";
+          if(act === "ready") orders[idx].status = "READY";
+          if(act === "complete") orders[idx].status = "COMPLETED";
+          if(act === "decline") orders[idx].status = "DECLINED";
+
+          set("orders", orders);
+          logActivity(`Seller updated order #${id}: ${orders[idx].status}`);
+          renderOrders();
+          renderEarnings();
+        });
+      });
+    }
+
+    function renderProducts(){
+      const list = document.getElementById("productList");
+      const products = get("products", []).filter(p => p.sellerEmail === seller.email);
+      list.innerHTML = "";
+
+      products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div style="width:54px;height:54px;border-radius:12px;border:1px solid rgba(20,20,20,.08);background:rgba(255,255,255,.8);display:grid;place-items:center;font-weight:900;">✕</div>
+            <div class="meta">
+              <strong>${p.name}</strong>
+              <span class="muted">₱${p.price}</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn small" type="button" data-edit="${p.id}">Edit</button>
+            <button class="btn small danger" type="button" data-del="${p.id}">Delete</button>
+            <div class="toggle ${p.active ? "on" : ""}" data-tog="${p.id}" role="switch" aria-checked="${p.active ? "true" : "false"}">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      if(products.length === 0){
+        list.innerHTML = `<div class="muted">No products yet.</div>`;
+      }
+
+      document.querySelectorAll("[data-tog]").forEach(t => {
+        t.addEventListener("click", () => {
+          const id = t.dataset.tog;
+          const products = get("products", []);
+          const idx = products.findIndex(x => x.id === id);
+          if(idx === -1) return;
+          products[idx].active = !products[idx].active;
+          set("products", products);
+          logActivity(`Seller toggled product ${id}: ${products[idx].active ? "ON" : "OFF"}`);
+          renderProducts();
+        });
+      });
+
+      document.querySelectorAll("[data-del]").forEach(b => {
+        b.addEventListener("click", () => {
+          const id = b.dataset.del;
+          const products = get("products", []);
+          const filtered = products.filter(x => x.id !== id);
+          set("products", filtered);
+          logActivity(`Seller deleted product ${id}`);
+          renderProducts();
+        });
+      });
+
+      document.querySelectorAll("[data-edit]").forEach(b => {
+        b.addEventListener("click", () => {
+          const id = b.dataset.edit;
+          const products = get("products", []);
+          const idx = products.findIndex(x => x.id === id);
+          if(idx === -1) return;
+
+          const newName = prompt("Edit product name:", products[idx].name);
+          if(newName === null) return;
+
+          const newPriceRaw = prompt("Edit price:", String(products[idx].price));
+          if(newPriceRaw === null) return;
+
+          const newPrice = Number(newPriceRaw);
+          if(!newName.trim() || !Number.isFinite(newPrice) || newPrice < 0) return;
+
+          products[idx].name = newName.trim();
+          products[idx].price = Math.round(newPrice);
+          set("products", products);
+          logActivity(`Seller edited product ${id}`);
+          renderProducts();
+        });
+      });
+    }
+
+    document.getElementById("addProductBtn").addEventListener("click", () => {
+      const name = prompt("Product name:");
+      if(!name || !name.trim()) return;
+      const priceRaw = prompt("Price:");
+      if(priceRaw === null) return;
+      const price = Number(priceRaw);
+      if(!Number.isFinite(price) || price < 0) return;
+
+      const products = get("products", []);
+      products.unshift({
+        id: safeId("p"),
+        sellerEmail: seller.email,
+        name: name.trim(),
+        price: Math.round(price),
+        active: true
+      });
+      set("products", products);
+      logActivity(`Seller added product: ${name.trim()}`);
+      renderProducts();
+    });
+
+    function renderEarnings(){
+      const orders = sellerOrders().filter(o => o.status === "COMPLETED" || o.status === "READY" || o.status === "PREPARING" || o.status === "CONFIRMED");
+      const total = orders.reduce((sum, o) => {
+        const t = (o.items || []).filter(i => i.sellerEmail === seller.email).reduce((s,i)=>s + i.price*i.qty, 0);
+        return sum + t;
+      }, 0);
+
+      document.getElementById("weekly").textContent = "₱" + total;
+      document.getElementById("breakdown").textContent = orders.length + " orders";
+
+      const today = new Date().toDateString();
+      const todayTotal = orders.reduce((sum, o) => {
+        const d = new Date(o.createdAt || Date.now()).toDateString();
+        if(d !== today) return sum;
+        const t = (o.items || []).filter(i => i.sellerEmail === seller.email).reduce((s,i)=>s + i.price*i.qty, 0);
+        return sum + t;
+      }, 0);
+      document.getElementById("daily").textContent = "₱" + todayTotal + " today";
+    }
+
+    function setTab(which){
+      const o = document.getElementById("tabOrders");
+      const p = document.getElementById("tabProducts");
+      const e = document.getElementById("tabEarnings");
+
+      const vO = document.getElementById("viewOrders");
+      const vP = document.getElementById("viewProducts");
+      const vE = document.getElementById("viewEarnings");
+
+      [o,p,e].forEach(x => x.classList.remove("active"));
+      [vO,vP,vE].forEach(x => x.style.display = "none");
+
+      if(which === "orders"){ o.classList.add("active"); vO.style.display = "block"; }
+      if(which === "products"){ p.classList.add("active"); vP.style.display = "block"; }
+      if(which === "earnings"){ e.classList.add("active"); vE.style.display = "block"; }
+    }
+
+    document.getElementById("tabOrders").addEventListener("click", () => setTab("orders"));
+    document.getElementById("tabProducts").addEventListener("click", () => setTab("products"));
+    document.getElementById("tabEarnings").addEventListener("click", () => setTab("earnings"));
+
+    renderStoreStatus();
+    renderOrders();
+    renderProducts();
+    renderEarnings();
+  </script>
+
+</body>
+</html>

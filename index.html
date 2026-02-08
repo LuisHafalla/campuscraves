@@ -1,0 +1,91 @@
+<!-- File: index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Login</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="center-wrap">
+    <div class="panel">
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Campus Craves Logo">
+        <h1 class="title">Campus Craves</h1>
+        <p class="subtitle">Meal plans for students & alumni</p>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-title">Login</div>
+
+      <div class="field">
+        <label class="label">Login as</label>
+        <select id="role">
+          <option value="student">Student</option>
+          <option value="seller">Seller / Entrepreneur</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Email</label>
+        <input id="email" class="input" placeholder="Enter email" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <label class="label">Password</label>
+        <input id="password" class="input" type="password" placeholder="Enter password" autocomplete="current-password">
+      </div>
+
+      <div style="height:16px;"></div>
+
+      <button class="btn primary" id="loginBtn" type="button">Login</button>
+
+      <div style="height:10px;"></div>
+
+      <a class="btn" href="register.html">Create Account</a>
+
+      <p id="msg" class="muted" style="margin-top:12px;"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const existing = get("session", null);
+    if (existing) {
+      goByRole(existing);
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const role = document.getElementById("role").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const ok = login(email, password);
+      if (!ok) {
+        document.getElementById("msg").textContent = "Invalid email or password.";
+        return;
+      }
+
+      const user = get("session", null);
+      if (!user) {
+        document.getElementById("msg").textContent = "Login error. Please try again.";
+        return;
+      }
+
+      if (user.role !== role) {
+        // role mismatch: logout and show message
+        localStorage.removeItem("session");
+        document.getElementById("msg").textContent = "Role mismatch. Please choose the correct role.";
+        return;
+      }
+
+      goByRole(user, role);
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!-- File: admin.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Admin Dashboard</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="header-title">Admin Dashboard</div>
+          <div class="header-sub">CampusCraves System Oversight</div>
+        </div>
+      </div>
+      <div>
+        <button class="btn small" type="button" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">Platform Overview</div>
+      <div class="grid2">
+        <button class="big-btn" type="button">
+          Active Sellers<br><span class="muted" id="activeSellers">0</span>
+        </button>
+        <button class="big-btn" type="button">
+          Total Students<br><span class="muted" id="totalStudents">0</span>
+        </button>
+        <button class="big-btn" type="button" onclick="window.location.href='admin-reports.html'">
+          Open Complaints<br><span class="muted" id="openComplaints">0</span>
+        </button>
+        <button class="big-btn" type="button" onclick="window.location.href='admin-verification.html'">
+          Pending Verifications<br><span class="muted" id="pendingVerifications">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">System Management</div>
+      <div class="list">
+        <button class="big-btn" type="button" onclick="window.location.href='admin-verification.html'">Student Verification</button>
+        <button class="big-btn" type="button" onclick="window.location.href='admin-reports.html'">Reports & Complaints</button>
+        <button class="big-btn" type="button" onclick="window.location.href='admin-database.html'">Database Management</button>
+        <button class="big-btn" type="button" onclick="window.location.href='admin-users.html'">User Management</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">Recent Activity</div>
+      <div class="list" id="activityList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["admin"]);
+
+    const users = get("users", []);
+    const sellers = users.filter(u => u.role === "seller");
+    const students = users.filter(u => u.role === "student");
+
+    const active = sellers.filter(s => !!s.storeOpen).length;
+
+    const reports = get("reports", []);
+    const openComplaints = reports.filter(r => r.status === "open").length;
+
+    const ver = get("verifications", []);
+    const pending = ver.filter(v => v.state === "pending").length;
+
+    document.getElementById("activeSellers").textContent = active;
+    document.getElementById("totalStudents").textContent = students.length;
+    document.getElementById("openComplaints").textContent = openComplaints;
+    document.getElementById("pendingVerifications").textContent = pending;
+
+    const activity = get("activity", []);
+    const list = document.getElementById("activityList");
+    list.innerHTML = "";
+
+    if(activity.length === 0){
+      list.innerHTML = `<div class="muted">No recent activity.</div>`;
+    } else {
+      activity.slice(0, 6).forEach(a => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>${a.text}</strong>
+            <span class="muted">${new Date(a.ts).toLocaleString()}</span>
+          </div>
+          <span class="badge">LOG</span>
+        `;
+        list.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>

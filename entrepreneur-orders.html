@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Seller Dashboard</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <img src="assets/img/logo.png" class="nav-logo" alt="Logo">
+        <strong>Campus Craves</strong>
+        <span class="badge">Seller</span>
+      </div>
+      <div class="right">
+        <a class="btn small" href="home.html">Marketplace</a>
+        <button class="btn small" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Incoming Orders</h2>
+      <p class="muted">Accept and complete orders (demo).</p>
+      <div class="hr"></div>
+
+      <div class="list" id="orderList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["seller"]);
+
+    const list = document.getElementById("orderList");
+
+    function render(){
+      const orders = get("orders", []);
+      list.innerHTML = "";
+
+      if(orders.length === 0){
+        list.innerHTML = `<div class="muted">No orders yet.</div>`;
+        return;
+      }
+
+      orders.forEach((o, idx) => {
+        const total = (o.items || []).reduce((s,i)=> s + (i.price*i.qty), 0);
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>Order #${o.orderNo}</strong>
+            <span class="muted">Status: ${o.status} • Total: ₱${total}</span>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn small" data-a="accept" data-i="${idx}">Accept</button>
+            <button class="btn small" data-a="complete" data-i="${idx}">Complete</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      document.querySelectorAll("button[data-a]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const i = Number(btn.dataset.i);
+          const action = btn.dataset.a;
+
+          const ordersNow = get("orders", []);
+          if(!ordersNow[i]) return;
+
+          if(action === "accept") ordersNow[i].status = "PREPARING";
+          if(action === "complete") ordersNow[i].status = "COMPLETED";
+
+          set("orders", ordersNow);
+          render();
+        });
+      });
+    }
+
+    render();
+  </script>
+
+</body>
+</html>

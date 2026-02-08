@@ -1,0 +1,84 @@
+<!-- File: allergy.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Allergy Perimeter</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='profile.html'">
+          <span class="icon">‹</span>
+        </button>
+        <div>
+          <div class="header-title">Allergy Perimeter</div>
+          <div class="header-sub">Select allergens to avoid</div>
+        </div>
+      </div>
+      <div>
+        <button class="icon-btn" type="button" onclick="logout()"><span class="icon">⎋</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="list" id="allergyList"></div>
+
+      <div style="height:14px"></div>
+      <button class="btn primary" id="saveBtn" type="button">Save</button>
+      <p class="muted" id="msg" style="margin:12px 0 0"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const session = requireRole(["student"]);
+    const ALL = ["Peanuts", "Tree Nuts", "Milk/Dairy", "Eggs", "Shellfish", "Fish"];
+
+    const list = document.getElementById("allergyList");
+    const selected = new Set((session.allergies || []));
+
+    function render(){
+      list.innerHTML = "";
+      ALL.forEach(a => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.style.cursor = "pointer";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>${a}</strong>
+            <span class="muted">${selected.has(a) ? "Avoid" : "Allowed"}</span>
+          </div>
+          <span class="badge">${selected.has(a) ? "ON" : "OFF"}</span>
+        `;
+        div.addEventListener("click", () => {
+          if(selected.has(a)) selected.delete(a);
+          else selected.add(a);
+          render();
+        });
+        list.appendChild(div);
+      });
+    }
+
+    render();
+
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      const users = get("users", []);
+      const idx = users.findIndex(u => u.email === session.email);
+      if(idx !== -1){
+        users[idx].allergies = Array.from(selected);
+        set("users", users);
+        set("session", users[idx]);
+        logActivity(`Updated allergy perimeter: ${session.email}`);
+      }
+      document.getElementById("msg").textContent = "Saved.";
+      setTimeout(()=> window.location.href = "profile.html", 500);
+    });
+  </script>
+
+</body>
+</html>

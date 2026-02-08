@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Identity Verification</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <img src="assets/img/logo.png" class="nav-logo" alt="Logo">
+        <strong>Campus Craves</strong>
+        <span class="badge">Verification</span>
+      </div>
+      <div class="right">
+        <a class="btn small" href="home.html">Home</a>
+        <button class="btn small" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Identity Verification</h2>
+      <p class="muted">Select your academic status to receive a verification badge.</p>
+
+      <div class="hr"></div>
+
+      <div class="field">
+        <label class="label">Academic Status</label>
+        <select id="status">
+          <option value="Undergraduate">Undergraduate</option>
+          <option value="Postgraduate">Postgraduate</option>
+          <option value="Alumni">Alumni</option>
+        </select>
+      </div>
+
+      <div style="height:14px"></div>
+      <button class="btn primary" id="continueBtn">Continue</button>
+
+      <p id="msg" class="muted" style="margin-top:12px;"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const user = requireLogin();
+
+    document.getElementById("continueBtn").addEventListener("click", () => {
+      const status = document.getElementById("status").value;
+
+      // mark verified for demo
+      const users = get("users", []);
+      const idx = users.findIndex(u => u.email === user.email);
+      if(idx !== -1){
+        users[idx].verified = true;
+        users[idx].status = status;
+        set("users", users);
+        set("session", users[idx]);
+      }
+
+      window.location.href = "allergy.html";
+    });
+  </script>
+
+</body>
+</html>

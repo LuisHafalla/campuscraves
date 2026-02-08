@@ -1,0 +1,72 @@
+<!-- File: home.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Marketplace</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <img src="assets/img/logo.png" class="nav-logo" alt="Logo">
+        <strong>Campus Craves</strong>
+        <span class="badge" id="badge">Student</span>
+      </div>
+      <div class="right">
+        <a class="btn small" href="profile.html">Profile</a>
+        <a class="btn small" href="cart.html">Cart</a>
+        <button class="btn small" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Marketplace</h2>
+      <p class="muted">Browse meal plans from student entrepreneurs.</p>
+
+      <div class="hr"></div>
+
+      <div class="list" id="sellerList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const me = requireRole(["student"]);
+    document.getElementById("badge").textContent = me.status ? `Verified ${me.status}` : "Student";
+
+    const list = document.getElementById("sellerList");
+
+    function renderSellers(){
+      const users = get("users", []);
+      const sellers = users.filter(u => u.role === "seller");
+
+      list.innerHTML = "";
+      sellers.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>${s.storeName || "CampusCraves Store"}</strong>
+            <span class="muted">${s.storeOpen ? "Open now" : "Closed"} • Seller: ${s.name || s.email}</span>
+          </div>
+          <a class="btn small primary" href="seller-menu.html?seller=${encodeURIComponent(s.email)}">View</a>
+        `;
+        list.appendChild(div);
+      });
+
+      if(sellers.length === 0){
+        list.innerHTML = `<div class="muted">No sellers available.</div>`;
+      }
+    }
+
+    renderSellers();
+  </script>
+
+</body>
+</html>

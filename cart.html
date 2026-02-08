@@ -1,0 +1,97 @@
+<!-- File: cart.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Cart</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <img src="assets/img/logo.png" class="nav-logo" alt="Logo">
+        <strong>Campus Craves</strong>
+        <span class="badge">Cart</span>
+      </div>
+      <div class="right">
+        <a class="btn small" href="home.html">Home</a>
+        <button class="btn small" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Your Cart</h2>
+      <div class="hr"></div>
+
+      <div class="list" id="cartList"></div>
+
+      <div style="height:10px"></div>
+
+      <div class="item">
+        <strong>Total</strong>
+        <strong id="total">₱0</strong>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <a class="btn primary" href="checkout.html">Proceed to Checkout</a>
+      <button class="btn" id="clearBtn" type="button">Clear Cart</button>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["student"]);
+
+    const list = document.getElementById("cartList");
+    const totalEl = document.getElementById("total");
+
+    function render(){
+      const cart = get("cart", []);
+      list.innerHTML = "";
+
+      let total = 0;
+
+      cart.forEach((c, idx) => {
+        total += c.price * c.qty;
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>${c.name}</strong>
+            <span class="muted">₱${c.price} × ${c.qty}</span>
+          </div>
+          <button class="btn small danger" type="button">Remove</button>
+        `;
+        div.querySelector("button").addEventListener("click", () => {
+          const cartNow = get("cart", []);
+          cartNow.splice(idx, 1);
+          set("cart", cartNow);
+          render();
+        });
+        list.appendChild(div);
+      });
+
+      totalEl.textContent = "₱" + total;
+
+      if(cart.length === 0){
+        list.innerHTML = `<div class="muted">Your cart is empty.</div>`;
+      }
+    }
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      set("cart", []);
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>

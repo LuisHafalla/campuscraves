@@ -1,0 +1,100 @@
+<!-- File: register.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Register</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="center-wrap">
+    <div class="panel">
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Campus Craves Logo">
+        <h1 class="title">Create Account</h1>
+        <p class="subtitle">For students & alumni</p>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-title">Register (Student)</div>
+
+      <div class="field">
+        <label class="label">Full Name</label>
+        <input id="name" class="input" placeholder="Juan Dela Cruz" />
+      </div>
+
+      <div class="field">
+        <label class="label">University Email</label>
+        <input id="email" class="input" placeholder="example@uni.edu" />
+      </div>
+
+      <div class="field">
+        <label class="label">Password</label>
+        <input id="password" class="input" type="password" placeholder="Create a password" />
+      </div>
+
+      <div class="field">
+        <label class="label">Academic Status</label>
+        <select id="status">
+          <option value="Undergraduate">Undergraduate</option>
+          <option value="Postgraduate">Postgraduate</option>
+          <option value="Alumni">Alumni</option>
+        </select>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <button class="btn primary" id="createBtn" type="button">Create Account</button>
+
+      <div style="height:10px"></div>
+      <a class="btn" href="index.html">Back to Login</a>
+
+      <p id="msg" class="muted" style="margin:12px 0 0"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    document.getElementById("createBtn").addEventListener("click", () => {
+      const nameVal = document.getElementById("name").value.trim();
+      const emailVal = document.getElementById("email").value.trim();
+      const passVal = document.getElementById("password").value.trim();
+      const statusVal = document.getElementById("status").value;
+
+      if (!nameVal || !emailVal || !passVal) {
+        document.getElementById("msg").textContent = "Please complete all fields.";
+        return;
+      }
+
+      const users = get("users", []);
+      const exists = users.some(u => u.email.toLowerCase() === emailVal.toLowerCase());
+
+      if (exists) {
+        document.getElementById("msg").textContent = "Email is already registered.";
+        return;
+      }
+
+      users.push({
+        email: emailVal,
+        password: passVal,
+        role: "student",
+        name: nameVal,
+        verified: true,
+        status: statusVal,
+        allergies: [],
+        loyaltyPoints: 0
+      });
+
+      set("users", users);
+      logActivity(`New student registered: ${emailVal}`);
+      login(emailVal, passVal);
+      const user = get("session", null);
+      goByRole(user, "student");
+    });
+  </script>
+
+</body>
+</html>

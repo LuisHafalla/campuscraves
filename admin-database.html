@@ -1,0 +1,179 @@
+<!-- File: admin-database.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Database Management</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='admin.html'"><span class="icon">‹</span></button>
+        <div class="header-title">Database Management</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="search">
+        <input class="input" id="q" placeholder="search by name, email or product..." />
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="tabs" style="gap:10px;">
+        <button class="tab active" type="button" data-mode="users">Users</button>
+        <button class="tab" type="button" data-mode="products">Product</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="list" id="dbList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["admin"]);
+
+    const list = document.getElementById("dbList");
+    const q = document.getElementById("q");
+    let mode = "users";
+
+    function setMode(m){
+      mode = m;
+      document.querySelectorAll("[data-mode]").forEach(x => x.classList.remove("active"));
+      document.querySelector(`[data-mode="${m}"]`).classList.add("active");
+      render();
+    }
+
+    function render(){
+      const query = q.value.trim().toLowerCase();
+      list.innerHTML = "";
+
+      if(mode === "users"){
+        const users = get("users", [])
+          .filter(u => (u.name || "").toLowerCase().includes(query) || (u.email || "").toLowerCase().includes(query));
+
+        users.forEach(u => {
+          const div = document.createElement("div");
+          div.className = "block";
+          div.innerHTML = `
+            <div style="font-weight:900;">${u.name || u.email}</div>
+            <div class="muted" style="margin-top:6px;">${u.email} • ${u.role}</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+              <button class="btn small" type="button" data-edit="${u.email}">Edit</button>
+              <button class="btn small danger" type="button" data-sus="${u.email}">Suspend</button>
+              <button class="btn small danger" type="button" data-del="${u.email}">Delete</button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+
+        if(users.length === 0) list.innerHTML = `<div class="muted">No users found.</div>`;
+
+        document.querySelectorAll("[data-edit]").forEach(b => {
+          b.addEventListener("click", () => {
+            const email = b.dataset.edit;
+            const users = get("users", []);
+            const idx = users.findIndex(x => x.email === email);
+            if(idx === -1) return;
+
+            const newName = prompt("Edit name:", users[idx].name || "");
+            if(newName === null) return;
+
+            users[idx].name = newName.trim() || users[idx].name;
+            set("users", users);
+            logActivity(`Admin edited user: ${email}`);
+            render();
+          });
+        });
+
+        document.querySelectorAll("[data-sus]").forEach(b => {
+          b.addEventListener("click", () => {
+            const email = b.dataset.sus;
+            logActivity(`Admin suspended user (demo): ${email}`);
+            alert("Suspended (demo).");
+          });
+        });
+
+        document.querySelectorAll("[data-del]").forEach(b => {
+          b.addEventListener("click", () => {
+            const email = b.dataset.del;
+            const users = get("users", []);
+            const filtered = users.filter(x => x.email !== email);
+            set("users", filtered);
+            logActivity(`Admin deleted user: ${email}`);
+            render();
+          });
+        });
+      }
+
+      if(mode === "products"){
+        const products = get("products", [])
+          .filter(p => (p.name || "").toLowerCase().includes(query));
+
+        products.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "block";
+          div.innerHTML = `
+            <div style="font-weight:900;">${p.name}</div>
+            <div class="muted" style="margin-top:6px;">₱${p.price} • ${p.active ? "Active" : "Hidden"}</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+              <button class="btn small" type="button" data-editp="${p.id}">Edit</button>
+              <button class="btn small danger" type="button" data-rem="${p.id}">Remove</button>
+            </div>
+          `;
+          list.appendChild(div);
+        });
+
+        if(products.length === 0) list.innerHTML = `<div class="muted">No products found.</div>`;
+
+        document.querySelectorAll("[data-editp]").forEach(b => {
+          b.addEventListener("click", () => {
+            const id = b.dataset.editp;
+            const products = get("products", []);
+            const idx = products.findIndex(x => x.id === id);
+            if(idx === -1) return;
+
+            const newName = prompt("Edit product name:", products[idx].name);
+            if(newName === null) return;
+
+            const newPriceRaw = prompt("Edit price:", String(products[idx].price));
+            if(newPriceRaw === null) return;
+
+            const newPrice = Number(newPriceRaw);
+            if(!newName.trim() || !Number.isFinite(newPrice) || newPrice < 0) return;
+
+            products[idx].name = newName.trim();
+            products[idx].price = Math.round(newPrice);
+            set("products", products);
+            logActivity(`Admin edited product: ${id}`);
+            render();
+          });
+        });
+
+        document.querySelectorAll("[data-rem]").forEach(b => {
+          b.addEventListener("click", () => {
+            const id = b.dataset.rem;
+            const products = get("products", []);
+            const filtered = products.filter(x => x.id !== id);
+            set("products", filtered);
+            logActivity(`Admin removed product: ${id}`);
+            render();
+          });
+        });
+      }
+    }
+
+    q.addEventListener("input", render);
+    document.querySelectorAll("[data-mode]").forEach(t => t.addEventListener("click", () => setMode(t.dataset.mode)));
+
+    render();
+  </script>
+
+</body>
+</html>

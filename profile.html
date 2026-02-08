@@ -1,0 +1,62 @@
+<!-- File: profile.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Profile</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='home.html'">
+          <span class="icon">‹</span>
+        </button>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button class="icon-btn" type="button" onclick="window.location.href='history.html'">
+          <span class="icon">🧾</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="profile-hero">
+        <div class="avatar">👤</div>
+
+        <div>
+          <div class="profile-name" id="name">Juan Dela Cruz</div>
+          <div style="height:8px"></div>
+          <span class="pill" id="verifyPill">Verified Undergraduate</span>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="list">
+        <button class="big-btn" type="button" onclick="window.location.href='allergy.html'">Edit Allergy Perimeter</button>
+        <button class="big-btn" type="button" onclick="window.location.href='rewards.html'">Loyalty Points & Rewards</button>
+        <button class="big-btn" type="button" onclick="window.location.href='history.html'">Order History</button>
+        <button class="big-btn" type="button" onclick="window.location.href='settings.html'">Settings</button>
+        <button class="big-btn" type="button" onclick="window.location.href='support.html'">Help & Support</button>
+      </div>
+
+      <div style="height:18px"></div>
+
+      <button class="big-btn" type="button" onclick="logout()">Log Out</button>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const user = requireRole(["student"]);
+    document.getElementById("name").textContent = user.name || user.email;
+    const status = user.status || "Student";
+    document.getElementById("verifyPill").textContent = `Verified ${status}`;
+  </script>
+
+</body>
+</html>

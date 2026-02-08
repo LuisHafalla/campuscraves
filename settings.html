@@ -1,0 +1,66 @@
+<!-- File: settings.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Settings</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='profile.html'"><span class="icon">‹</span></button>
+        <div>
+          <div class="header-title">Settings</div>
+          <div class="header-sub">Account preferences</div>
+        </div>
+      </div>
+      <div>
+        <button class="icon-btn" type="button" onclick="logout()"><span class="icon">⎋</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="list">
+        <div class="item">
+          <div class="meta">
+            <strong>Notifications</strong>
+            <span class="muted">Enable alerts</span>
+          </div>
+          <div class="toggle on" id="notifToggle" role="switch" aria-checked="true">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="meta">
+            <strong>Dark Mode</strong>
+            <span class="muted">Demo toggle only</span>
+          </div>
+          <div class="toggle" id="darkToggle" role="switch" aria-checked="false">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["student"]);
+
+    function wireToggle(el){
+      el.addEventListener("click", () => {
+        el.classList.toggle("on");
+      });
+    }
+
+    wireToggle(document.getElementById("notifToggle"));
+    wireToggle(document.getElementById("darkToggle"));
+  </script>
+
+</body>
+</html>

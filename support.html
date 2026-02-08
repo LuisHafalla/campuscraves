@@ -1,0 +1,55 @@
+<!-- File: support.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Help & Support</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='profile.html'"><span class="icon">‹</span></button>
+        <div>
+          <div class="header-title">Help & Support</div>
+          <div class="header-sub">Send your concern</div>
+        </div>
+      </div>
+      <div>
+        <button class="icon-btn" type="button" onclick="logout()"><span class="icon">⎋</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="field">
+        <label class="label">Message</label>
+        <textarea id="msg" placeholder="Describe your concern..."></textarea>
+      </div>
+
+      <div style="height:12px"></div>
+      <button class="btn primary" id="sendBtn" type="button">Send</button>
+      <p class="muted" id="status" style="margin:12px 0 0"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["student"]);
+
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      const text = document.getElementById("msg").value.trim();
+      if(!text){
+        document.getElementById("status").textContent = "Please type your message.";
+        return;
+      }
+      logActivity("Support message sent (demo).");
+      document.getElementById("status").textContent = "Sent! (demo)";
+      document.getElementById("msg").value = "";
+    });
+  </script>
+
+</body>
+</html>

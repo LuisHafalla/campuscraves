@@ -1,0 +1,103 @@
+<!-- File: checkout.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Checkout</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="container">
+    <div class="nav">
+      <div class="left">
+        <img src="assets/img/logo.png" class="nav-logo" alt="Logo">
+        <strong>Campus Craves</strong>
+        <span class="badge">Checkout</span>
+      </div>
+      <div class="right">
+        <a class="btn small" href="cart.html">Back</a>
+        <button class="btn small" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Checkout</h2>
+      <p class="muted">Choose delivery and payment method.</p>
+
+      <div class="hr"></div>
+
+      <div class="field">
+        <label class="label">Delivery</label>
+        <select id="delivery">
+          <option value="Dorm Drop-Off">Dorm Drop-Off</option>
+          <option value="Campus Meetup">Campus Meetup</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="label">Payment</label>
+        <select id="payment">
+          <option value="Gcash">Gcash</option>
+          <option value="Maya">Maya</option>
+          <option value="Cash on Delivery">Cash on Delivery</option>
+        </select>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="item">
+        <strong>Total</strong>
+        <strong id="total">₱0</strong>
+      </div>
+
+      <div style="height:14px"></div>
+      <button class="btn primary" id="placeBtn" type="button">Place Order</button>
+      <p class="muted" id="msg" style="margin-top:12px;"></p>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["student"]);
+
+    function total(){
+      const cart = get("cart", []);
+      return cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    }
+
+    document.getElementById("total").textContent = "₱" + total();
+
+    document.getElementById("placeBtn").addEventListener("click", () => {
+      const cart = get("cart", []);
+      if(cart.length === 0){
+        document.getElementById("msg").textContent = "Your cart is empty.";
+        return;
+      }
+
+      const orderNo = "00-" + Math.floor(1000 + Math.random()*9000) + "-" + Math.floor(1000 + Math.random()*9000);
+      const orders = get("orders", []);
+
+      orders.unshift({
+        orderNo,
+        items: cart,
+        delivery: document.getElementById("delivery").value,
+        payment: document.getElementById("payment").value,
+        status: "CONFIRMED",
+        createdAt: new Date().toISOString()
+      });
+
+      set("orders", orders);
+      set("cart", []);
+      set("lastOrderNo", orderNo);
+
+      logActivity(`New order placed: #${orderNo}`);
+      window.location.href = "success.html";
+    });
+  </script>
+
+</body>
+</html>

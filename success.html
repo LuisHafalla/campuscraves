@@ -1,0 +1,42 @@
+<!-- File: success.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Order Placed</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="center-wrap">
+    <div class="panel">
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Logo">
+        <h1 class="title">Order Placed!</h1>
+        <p class="subtitle">Your meal plan has been successfully placed.</p>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="item">
+        <strong>Order Number</strong>
+        <span class="badge" id="orderNo">#00-0000-0000</span>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <a class="btn primary" href="history.html">View Order Status</a>
+      <a class="btn" href="home.html">Back to Home</a>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["student"]);
+    const no = get("lastOrderNo", "00-0000-0000");
+    document.getElementById("orderNo").textContent = "#" + no;
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!-- File: rewards.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Loyalty Points</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='profile.html'"><span class="icon">‹</span></button>
+        <div>
+          <div class="header-title">Loyalty Points & Rewards</div>
+          <div class="header-sub">Earn points for every order</div>
+        </div>
+      </div>
+      <div>
+        <button class="icon-btn" type="button" onclick="logout()"><span class="icon">⎋</span></button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="item">
+        <div class="meta">
+          <strong>Your Points</strong>
+          <span class="muted" id="points">0</span>
+        </div>
+        <span class="badge">POINTS</span>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="list">
+        <div class="item">
+          <div class="meta">
+            <strong>Reward: ₱20 Discount</strong>
+            <span class="muted">Requires 100 points</span>
+          </div>
+          <button class="btn small" type="button" onclick="alert('Demo only')">Redeem</button>
+        </div>
+
+        <div class="item">
+          <div class="meta">
+            <strong>Reward: Free Delivery</strong>
+            <span class="muted">Requires 200 points</span>
+          </div>
+          <button class="btn small" type="button" onclick="alert('Demo only')">Redeem</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    const user = requireRole(["student"]);
+    document.getElementById("points").textContent = user.loyaltyPoints ?? 0;
+  </script>
+
+</body>
+</html>

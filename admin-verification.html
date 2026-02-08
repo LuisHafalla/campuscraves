@@ -1,0 +1,109 @@
+<!-- File: admin-verification.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - Student Verification</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='admin.html'"><span class="icon">‹</span></button>
+        <div>
+          <div class="header-title">Student Verification</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">Filter By Status</div>
+      <div class="tabs" style="gap:8px;">
+        <button class="tab active" type="button" data-filter="all">All</button>
+        <button class="tab" type="button" data-filter="Undergraduate">Undergrad</button>
+        <button class="tab" type="button" data-filter="Postgraduate">Postgrad</button>
+        <button class="tab" type="button" data-filter="Alumni">Alumni</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="list" id="verList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["admin"]);
+
+    const list = document.getElementById("verList");
+    let current = "all";
+
+    function setActive(filter){
+      current = filter;
+      document.querySelectorAll("[data-filter]").forEach(t => t.classList.remove("active"));
+      document.querySelector(`[data-filter="${filter}"]`).classList.add("active");
+      render();
+    }
+
+    function render(){
+      const items = get("verifications", []).filter(v => v.state === "pending");
+      const filtered = current === "all" ? items : items.filter(v => v.status === current);
+
+      list.innerHTML = "";
+      filtered.forEach(v => {
+        const div = document.createElement("div");
+        div.className = "block";
+        div.innerHTML = `
+          <div style="font-weight:900;">${v.name}</div>
+          <div class="muted" style="margin-top:6px;">${v.status}</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+            <button class="btn small primary" type="button" data-approve="${v.id}">Approve & Verify</button>
+            <button class="btn small danger" type="button" data-reject="${v.id}">Reject</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+
+      if(filtered.length === 0){
+        list.innerHTML = `<div class="muted">No pending verifications.</div>`;
+      }
+
+      document.querySelectorAll("[data-approve]").forEach(b => {
+        b.addEventListener("click", () => {
+          const id = b.dataset.approve;
+          const ver = get("verifications", []);
+          const idx = ver.findIndex(x => x.id === id);
+          if(idx === -1) return;
+          ver[idx].state = "approved";
+          set("verifications", ver);
+          logActivity(`Verification approved: ${ver[idx].name}`);
+          render();
+        });
+      });
+
+      document.querySelectorAll("[data-reject]").forEach(b => {
+        b.addEventListener("click", () => {
+          const id = b.dataset.reject;
+          const ver = get("verifications", []);
+          const idx = ver.findIndex(x => x.id === id);
+          if(idx === -1) return;
+          ver[idx].state = "rejected";
+          set("verifications", ver);
+          logActivity(`Verification rejected: ${ver[idx].name}`);
+          render();
+        });
+      });
+    }
+
+    document.querySelectorAll("[data-filter]").forEach(t => {
+      t.addEventListener("click", () => setActive(t.dataset.filter));
+    });
+
+    render();
+  </script>
+
+</body>
+</html>

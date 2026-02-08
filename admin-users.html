@@ -1,0 +1,121 @@
+<!-- File: admin-users.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campus Craves - User Management</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" type="button" onclick="window.location.href='admin.html'"><span class="icon">‹</span></button>
+        <div class="header-title">User Management</div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">Quick Actions</div>
+      <div class="list">
+        <button class="big-btn" type="button" id="addSellerBtn">Add Seller Account (Demo)</button>
+        <button class="big-btn" type="button" id="addStudentBtn">Add Student Account (Demo)</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-title">All Users</div>
+      <div class="list" id="usersList"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js"></script>
+  <script>
+    requireRole(["admin"]);
+
+    const list = document.getElementById("usersList");
+
+    function render(){
+      const users = get("users", []);
+      list.innerHTML = "";
+
+      users.forEach(u => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div class="meta">
+            <strong>${u.name || u.email}</strong>
+            <span class="muted">${u.email} • ${u.role}</span>
+          </div>
+          <button class="btn small danger" type="button" data-del="${u.email}">Delete</button>
+        `;
+        list.appendChild(div);
+      });
+
+      document.querySelectorAll("[data-del]").forEach(b => {
+        b.addEventListener("click", () => {
+          const email = b.dataset.del;
+          const users = get("users", []);
+          const filtered = users.filter(x => x.email !== email);
+          set("users", filtered);
+          logActivity(`Admin deleted user: ${email}`);
+          render();
+        });
+      });
+    }
+
+    document.getElementById("addSellerBtn").addEventListener("click", () => {
+      const email = prompt("Seller email:");
+      if(!email || !email.trim()) return;
+      const pass = prompt("Password:") || "1234";
+      const name = prompt("Seller name:") || "Seller";
+      const store = prompt("Store name:") || "CampusCraves Store";
+
+      const users = get("users", []);
+      if(users.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) return;
+
+      users.push({
+        email: email.trim(),
+        password: pass,
+        role: "seller",
+        name,
+        storeName: store,
+        storeOpen: true
+      });
+      set("users", users);
+      logActivity(`Admin added seller: ${email.trim()}`);
+      render();
+    });
+
+    document.getElementById("addStudentBtn").addEventListener("click", () => {
+      const email = prompt("Student email:");
+      if(!email || !email.trim()) return;
+      const pass = prompt("Password:") || "1234";
+      const name = prompt("Student name:") || "Student";
+      const status = prompt("Status (Undergraduate/Postgraduate/Alumni):") || "Undergraduate";
+
+      const users = get("users", []);
+      if(users.some(u => u.email.toLowerCase() === email.trim().toLowerCase())) return;
+
+      users.push({
+        email: email.trim(),
+        password: pass,
+        role: "student",
+        name,
+        verified: true,
+        status,
+        allergies: [],
+        loyaltyPoints: 0
+      });
+      set("users", users);
+      logActivity(`Admin added student: ${email.trim()}`);
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
